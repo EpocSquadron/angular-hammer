@@ -39,15 +39,17 @@
   if (typeof Hammer === 'undefined') {
     if (typeof require !== 'undefined' && require) {
       try {
-        Hammer = propagating(require('hammerjs'));
+        Hammer = propagating(require('hammerjs'), {preventDefault: true});
       } catch (e) {
         return console.log('ERROR: Angular Hammer could not require() a reference to Hammer');
       }
     } else if (typeof window.Hammer !== 'undefined') {
-      Hammer = propagating(window.Hammer);
+      Hammer = propagating(window.Hammer, {preventDefault: true});
     } else {
       return console.log('ERROR: Angular Hammer could not find or require() a reference to Hammer');
     }
+  } else {
+    Hammer = propagating(Hammer, {preventDefault: true});
   }
 
   /**
