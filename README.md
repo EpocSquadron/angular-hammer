@@ -7,7 +7,7 @@ An [Angular.js](https://angularjs.org/) module that enables you to bind custom b
 Install using [NPM](https://www.npmjs.com/).
 
 ```shell
-$ npm install --save angular-hammer
+$ npm install --save angular-hammer-propagating
 ```
 
 Add `hmTouchEvents` to your app or module's dependencies. This module is designed to work with Angular.js v1.2.0+, and Hammer.js v2.0.0+.
