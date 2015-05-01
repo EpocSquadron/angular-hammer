@@ -10,7 +10,28 @@ Install using [NPM](https://www.npmjs.com/).
 $ npm install --save angular-hammer-propagating
 ```
 
-Add `hmTouchEvents` to your app or module's dependencies. This module is designed to work with Angular.js v1.2.0+, and Hammer.js v2.0.0+.
+Add `hmTouchEvents` to your app or module's dependencies. This module is designed to work with Angular.js v1.2.0+, and Hammer.js v2.0.0+. You will need to include both Hammer.js and Hammer Propagating into your application. With browserify this can be done via a browserify shim in the package.json of your application:
+
+```json
+"dependencies": {
+    "angular-hammer-propagating": "^1.0.0",
+    "hammerjs": "^2.0.4",
+    "propagating-hammerjs": "^1.4.1"
+},
+...
+"browser": {
+    "angular-hammer-propagating": "./node_modules/angular-hammer-propagating/angular.hammer-propagating.js"
+},
+"browserify-shim": {
+    "angular-hammer-propagating": {
+      "exports": "angular.module('hmTouchEvents').name",
+      "depends": [
+        "./node_modules/hammerjs/hammer.js:Hammer",
+        "./node_modules/propagating-hammerjs:propagating"
+      ]
+    }
+}
+```
 
 #### A Note on Version Naming
 
