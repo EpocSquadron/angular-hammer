@@ -1,36 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>JSDoc: Source: angular.hammer.js</title>
-    
-    <script src="scripts/prettify/prettify.js"> </script>
-    <script src="scripts/prettify/lang-css.js"> </script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
-    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
-</head>
+// ---- Angular Hammer Propagating ----
 
-<body>
-
-<div id="main">
-    
-    <h1 class="page-title">Source: angular.hammer.js</h1>
-    
-    
-
-
-    
-    <section>
-        <article>
-            <pre class="prettyprint source"><code>// ---- Angular Hammer ----
-
-// Copyright (c) 2014 Ryan S Mullins &lt;ryan@ryanmullins.org>
+// Copyright (c) 2014 Daniel Poulin
 // Licensed under the MIT Software License
 
-(function (window, angular, Hammer) {
+(function (window, angular, propagating, Hammer) {
   'use strict';
 
   // Checking to make sure Hammer and Angular are defined
@@ -49,15 +22,29 @@
     }
   }
 
+  if (typeof propagating === 'undefined') {
+    if (typeof require !== 'undefined' && require) {
+      try {
+        propagating = require('propagating');
+      } catch (e) {
+        return console.log('ERROR: Angular Hammer could not require() a reference to propagating');
+      }
+  } else if (typeof window.propagating !== 'undefined') {
+      propagating = window.propagating;
+    } else {
+      return console.log('ERROR: Angular Hammer could not find or require() a reference to propagating');
+    }
+  }
+
   if (typeof Hammer === 'undefined') {
     if (typeof require !== 'undefined' && require) {
       try {
-        Hammer = require('hammerjs');
+        Hammer = propagating(require('hammerjs'));
       } catch (e) {
         return console.log('ERROR: Angular Hammer could not require() a reference to Hammer');
       }
     } else if (typeof window.Hammer !== 'undefined') {
-      Hammer = window.Hammer;
+      Hammer = propagating(window.Hammer);
     } else {
       return console.log('ERROR: Angular Hammer could not find or require() a reference to Hammer');
     }
@@ -65,7 +52,7 @@
 
   /**
    * Mapping of the gesture event names with the Angular attribute directive
-   * names. Follows the form: &lt;directiveName>:&lt;eventName>.
+   * names. Follows the form: <directiveName>:<eventName>.
    *
    * @type {Array}
    */
@@ -118,7 +105,7 @@
    * Iterates through each gesture type mapping and creates a directive for
    * each of the
    *
-   * @param  {String} type Mapping in the form of &lt;directiveName>:&lt;eventName>
+   * @param  {String} type Mapping in the form of <directiveName>:<eventName>
    * @return None
    */
   angular.forEach(gestureTypes, function (type) {
@@ -192,7 +179,7 @@
                   function callHandler () {
                     var fn = handlerExpr(scope, {'$event':event});
 
-                    if (fn) {
+                    if (typeof fn === 'function') {
                       fn.call(scope, event);
                     }
                   }
@@ -308,27 +295,27 @@
    * add is determined by the value of the options.type property.
    *
    * @param {Object}  manager Hammer.js manager object assigned to an element
-   * @param {Object}  options Options that define the recognizer to add
-   * @return {Object} Reference to the new gesture recognizer, if successful,
-   *                  null otherwise.
+   * @param {String}  type    Options that define the recognizer to add
+   * @return {Object}         Reference to the new gesture recognizer, if
+   *                          successful, null otherwise.
    */
-  function addRecognizer (manager, options) {
-    if (!manager || !options || !options.type) { return null; }
+  function addRecognizer (manager, type) {
+    if (manager === undefined || type === undefined) { return null; }
 
     var recognizer;
 
-    if (options.type.indexOf('pan') > -1) {
-      recognizer = new Hammer.Pan(options);
-    } else if (options.type.indexOf('pinch') > -1) {
-      recognizer = new Hammer.Pinch(options);
-    } else if (options.type.indexOf('press') > -1) {
-      recognizer = new Hammer.Press(options);
-    } else if (options.type.indexOf('rotate') > -1) {
-      recognizer = new Hammer.Rotate(options);
-    } else if (options.type.indexOf('swipe') > -1) {
-      recognizer = new Hammer.Swipe(options);
+    if (type.indexOf('pan') > -1) {
+      recognizer = new Hammer.Pan();
+    } else if (type.indexOf('pinch') > -1) {
+      recognizer = new Hammer.Pinch();
+    } else if (type.indexOf('press') > -1) {
+      recognizer = new Hammer.Press();
+    } else if (type.indexOf('rotate') > -1) {
+      recognizer = new Hammer.Rotate();
+    } else if (type.indexOf('swipe') > -1) {
+      recognizer = new Hammer.Swipe();
     } else {
-      recognizer = new Hammer.Tap(options);
+      recognizer = new Hammer.Tap();
     }
 
     manager.add(recognizer);
@@ -383,12 +370,15 @@
    * @return None
    */
   function setupRecognizerWithOptions (manager, options, element) {
-    if (!manager || !options) { return; }
+    if (manager == null || options == null || options.type == null) {
+      return console.error('ERROR: Angular Hammer could not setup the' +
+        ' recognizer. Values of the passed manager and options: ', manager, options);
+    }
 
     var recognizer = manager.get(options.type);
 
     if (!recognizer) {
-      recognizer = addRecognizer(manager, options);
+      recognizer = addRecognizer(manager, options.type);
     }
 
     if (!options.directions) {
@@ -410,31 +400,41 @@
     options.direction = parseDirections(options.directions);
     recognizer.set(options);
 
-    if (options.recognizeWith) {
-      if (!manager.get(options.recognizeWith)){
-        addRecognizer(manager, {type:options.recognizeWith});
+    if (typeof options.recognizeWith === 'string') {
+      var recognizeWithRecognizer;
+
+      if (manager.get(options.recognizeWith) == null){
+        recognizeWithRecognizer = addRecognizer(manager, options.recognizeWith);
       }
 
-      recognizer.recognizeWith(manager.get(options.recognizeWith));
+      if (recognizeWithRecognizer != null) {
+        recognizer.recognizeWith(recognizeWithRecognizer);
+      }
     }
 
-    if (options.dropRecognizeWith && manager.get(options.dropRecognizeWith)) {
+    if (typeof options.dropRecognizeWith  === 'string' &&
+        manager.get(options.dropRecognizeWith) != null) {
       recognizer.dropRecognizeWith(manager.get(options.dropRecognizeWith));
     }
 
-    if (options.requireFailure) {
-      if (!manager.get(options.requireFailure)){
-        addRecognizer(manager, {type:options.requireFailure});
+    if (typeof options.requireFailure  === 'string') {
+      var requireFailureRecognizer;
+
+      if (manager.get(options.requireFailure) == null){
+        requireFailureRecognizer = addRecognizer(manager, {type:options.requireFailure});
       }
 
-      recognizer.requireFailure(manager.get(options.requireFailure));
+      if (requireFailureRecognizer != null) {
+        recognizer.requireFailure(requireFailureRecognizer);
+      }
     }
 
-    if (options.dropRequireFailure && manager.get(options.dropRequireFailure)) {
+    if (typeof options.dropRequireFailure === 'string' &&
+        manager.get(options.dropRequireFailure) != null) {
       recognizer.dropRequireFailure(manager.get(options.dropRequireFailure));
     }
 
-    if (options.preventGhosts && element) {
+    if (options.preventGhosts === true && element != null) {
       preventGhosts(element);
     }
   }
@@ -488,13 +488,13 @@
      * @param {MouseEvent} ev
      */
     function preventGhostClick (ev) {
-      for (var i = 0; i &lt; coordinates.length; i++) {
+      for (var i = 0; i < coordinates.length; i++) {
         var x = coordinates[i][0];
         var y = coordinates[i][1];
 
         // within the range, so prevent the click
-        if (Math.abs(ev.clientX - x) &lt; threshold &&
-            Math.abs(ev.clientY - y) &lt; threshold) {
+        if (Math.abs(ev.clientX - x) < threshold &&
+            Math.abs(ev.clientY - y) < threshold) {
           ev.stopPropagation();
           ev.preventDefault();
           break;
@@ -525,7 +525,7 @@
       // changed touches always contain the removed touches on a touchend
       // the touches object might contain these also at some browsers (firefox os)
       // so touches - changedTouches will be 0 or lower, like -1, on the final touchend
-      if(ev.touches.length - ev.changedTouches.length &lt;= 0) {
+      if(ev.touches.length - ev.changedTouches.length <= 0) {
         var touch = ev.changedTouches[0];
         coordinates.push([touch.clientX, touch.clientY]);
 
@@ -533,27 +533,4 @@
       }
     }
   }
-})(window, window.angular, window.Hammer);
-</code></pre>
-        </article>
-    </section>
-
-
-
-
-</div>
-
-<nav>
-    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-hmTouchEvents.html">hmTouchEvents</a></li></ul>
-</nav>
-
-<br clear="both">
-
-<footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Wed Jan 14 2015 15:21:01 GMT-0500 (EST)
-</footer>
-
-<script> prettyPrint(); </script>
-<script src="scripts/linenumber.js"> </script>
-</body>
-</html>
+})(window, window.angular, window.propagating, window.Hammer);

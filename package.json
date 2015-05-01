@@ -1,8 +1,8 @@
 {
-  "name": "angular-hammer",
-  "version": "2.1.10",
+  "name": "angular-hammer-propagating",
+  "version": "1.0.0",
   "description": "Hammer.js support for Angular.js applications",
-  "main": "angular.hammer.js",
+  "main": "angular.hammer-propagating.js",
   "directories": {
     "example": "examples"
   },
@@ -11,21 +11,22 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/RyanMullins/angular-hammer.git"
+    "url": "https://github.com/EpocSquadron/angular-hammer-propagating.git"
   },
   "keywords": [
     "hammer",
+    "propagating",
     "angular",
     "javascript",
     "touch",
     "gesture"
   ],
-  "author": "Ryan S Mullins",
+  "author": "Daniel Pouln",
+  "contributors": ["Ryan S Mullins"],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/RyanMullins/angular-hammer/issues"
+    "url": "https://github.com/EpocSquadron/angular-hammer-propagating/issues"
   },
-  "homepage": "http://ryanmullins.github.io/angular-hammer/",
   "devDependencies": {
     "angular": ">=1.2.0",
     "browserify": "^8.0.3",
