@@ -1,7 +1,7 @@
 {
   "name": "angular-hammer-propagating",
-  "version": "1.0.0",
-  "description": "Hammer.js support for Angular.js applications",
+  "version": "1.0.1",
+  "description": "Hammer.js support for Angular.js applications, with propagating-hammerjs included.",
   "main": "angular.hammer-propagating.js",
   "directories": {
     "example": "examples"
