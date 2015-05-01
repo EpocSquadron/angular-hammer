@@ -3,7 +3,7 @@
 // Copyright (c) 2014 Ryan S Mullins <ryan@ryanmullins.org>
 // Licensed under the MIT Software License
 
-(function (window, angular, Hammer) {
+(function (window, angular, propagating, Hammer) {
   'use strict';
 
   // Checking to make sure Hammer and Angular are defined
@@ -22,15 +22,29 @@
     }
   }
 
+  if (typeof propagating === 'undefined') {
+    if (typeof require !== 'undefined' && require) {
+      try {
+        propagating = require('propagating');
+      } catch (e) {
+        return console.log('ERROR: Angular Hammer could not require() a reference to propagating');
+      }
+  } else if (typeof window.propagating !== 'undefined') {
+      propagating = window.propagating;
+    } else {
+      return console.log('ERROR: Angular Hammer could not find or require() a reference to propagating');
+    }
+  }
+
   if (typeof Hammer === 'undefined') {
     if (typeof require !== 'undefined' && require) {
       try {
-        Hammer = require('hammerjs');
+        Hammer = propagating(require('hammerjs'));
       } catch (e) {
         return console.log('ERROR: Angular Hammer could not require() a reference to Hammer');
       }
     } else if (typeof window.Hammer !== 'undefined') {
-      Hammer = window.Hammer;
+      Hammer = propagating(window.Hammer);
     } else {
       return console.log('ERROR: Angular Hammer could not find or require() a reference to Hammer');
     }
@@ -519,4 +533,4 @@
       }
     }
   }
-})(window, window.angular, window.Hammer);
+})(window, window.angular, window.propagating, window.Hammer);
