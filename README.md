@@ -205,9 +205,3 @@ module.controller('someDirective', function($scope) {
     }
 });
 ```
-
-## Demo
-
-* [Using the default set of recognizers](http://ryanmullins.github.io/angular-hammer/examples/default)
-* [Defining a custom gesture recognizer](http://ryanmullins.github.io/angular-hammer/examples/custom).
-* [Dragging a div around on the screen](http://ryanmullins.github.io/angular-hammer/examples/dragging).
